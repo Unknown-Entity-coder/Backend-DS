@@ -1,0 +1,84 @@
+Backend Framework
+
+mkdir backend
+cd backend
+npm init -y
+npm install express body-parser cors mysql2 sequelize dotenv
+
+-------------------------
+
+backend/
+├── models/        # Sequelize models
+├── routes/        # API routes
+├── controllers/   # Controller functions
+├── database/      # Database connection setup
+├── .env           # Environment variables
+└── app.js         # Entry point
+
+-------------------------
+
+CREATE TABLE Users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50),
+    email VARCHAR(100),
+    password VARCHAR(255),
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE Videos (
+    video_id INT AUTO_INCREMENT PRIMARY KEY,
+    title VARCHAR(100),
+    description TEXT,
+    upload_date DATE,
+    views INT DEFAULT 0,
+    user_id INT,
+    FOREIGN KEY (user_id) REFERENCES Users(user_id)
+);
+
+-------------------------
+
+DELIMITER //
+CREATE PROCEDURE GetAllUsers()
+BEGIN
+    SELECT * FROM Users;
+END //
+DELIMITER ;
+
+-------------------------
+
+CREATE FUNCTION AverageViews()
+RETURNS FLOAT
+BEGIN
+    RETURN (SELECT AVG(views) FROM Videos);
+END;
+
+-------------------------
+
+DELIMITER //
+CREATE TRIGGER UpdateCreatedAt
+BEFORE INSERT ON Users
+FOR EACH ROW
+BEGIN
+    SET NEW.created_at = NOW();
+END //
+DELIMITER ;
+
+-------------------------
+
+const { Sequelize } = require("sequelize");
+require("dotenv").config();
+
+const sequelize = new Sequelize(process.env.DB_NAME, process.env.DB_USER, process.env.DB_PASSWORD, {
+    host: process.env.DB_HOST,
+    dialect: "mysql",
+});
+
+module.exports = sequelize;
+
+-------------------------
+
+const sequelize = require('./database/config');
+
+sequelize.authenticate()
+    .then(() => console.log('Database connected'))
+    .catch(err => console.error('Database connection error:', err));
