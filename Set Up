@@ -1,4 +1,0 @@
-mkdir mvp-backend
-cd mvp-backend
-npm init -y
-npm install express body-parser cors mysql2
